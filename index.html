@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketCrawler AI | TradingView Theme</title>
+    <style>
+        /* TradingView Inspired Dark Theme */
+        :root {
+            --bg-base: #131722;
+            --bg-surface: #1e222d;
+            --bg-highlight: #2a2e39;
+            --text-main: #d1d4dc;
+            --text-muted: #787b86;
+            --accent-blue: #2962ff;
+            --accent-green: #089981;
+            --accent-red: #f23645;
+            --border: #2a2e39;
+            --font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Navbar */
+        header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-highlight);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-container input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .controls button {
+            background-color: var(--bg-highlight);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+        
+        .controls button:hover {
+            background-color: var(--border);
+        }
+
+        .controls button.active {
+            background-color: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        /* Main Layout */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Stock/IPO List */
+        .sidebar {
+            width: 300px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .tab.active {
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item:hover {
+            background-color: var(--bg-highlight);
+        }
+
+        .item-symbol { font-weight: bold; }
+        .item-name { font-size: 0.8rem; color: var(--text-muted); }
+        .price-up { color: var(--accent-green); }
+        .price-down { color: var(--accent-red); }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            gap: 20px;
+        }
+
+        .asset-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .asset-title h1 { font-size: 2rem; margin-bottom: 5px; }
+        .asset-title span { color: var(--text-muted); }
+
+        /* Crawler Terminal */
+        .crawler-container {
+            background-color: #000;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .crawler-header {
+            background-color: var(--bg-surface);
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .crawler-header .pulse {
+            color: var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        .terminal {
+            flex: 1;
+            padding: 15px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.85rem;
+            color: #0f0;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        /* Prediction Card */
+        .analysis-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            display: none; /* Hidden until crawl completes */
+        }
+
+        .prediction-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .prediction-badge.bullish { background-color: rgba(8, 153, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .prediction-badge.bearish { background-color: rgba(242, 54, 69, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
+
+        .analysis-content h3 {
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .analysis-text {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .layout { flex-direction: column; }
+            .sidebar { width: 100%; height: 250px; border-right: none; border-bottom: 1px solid var(--border); }
+            header { flex-wrap: wrap; height: auto; gap: 10px; }
+            .search-container { width: 100%; }
+            .controls { display: flex; width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+            MarketCrawler AI
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search NSE/BSE Stocks or IPOs..." oninput="filterAssets()">
+        </div>
+        <div class="controls">
+            <button id="langEnBtn" class="active" onclick="setLanguage('en')">English</button>
+            <button id="langHiBtn" onclick="setLanguage('hi')">हिंदी</button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="tabs">
+                <div class="tab active" id="tab-stocks" onclick="switchTab('stocks')">NSE/BSE Stocks</div>
+                <div class="tab" id="tab-ipos" onclick="switchTab('ipos')">Upcoming IPOs</div>
+            </div>
+            <div class="list-container" id="assetList">
+                <!-- List dynamically populated via JS -->
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="asset-header">
+                <div class="asset-title">
+                    <h1 id="displayName">Select an Asset</h1>
+                    <span id="displaySymbol">--</span>
+                </div>
+                <div id="displayPrice" class="asset-title" style="font-size: 1.5rem;"></div>
+            </div>
+
+            <!-- Deep Web / Social Crawler Simulation -->
+            <div class="crawler-container">
+                <div class="crawler-header">
+                    <span>Social Media & Web Crawler Terminal</span>
+                    <span class="pulse" id="crawlerStatus">IDLE</span>
+                </div>
+                <div class="terminal" id="terminalOutput">
+                    > Initialize crawler engine...<br>
+                    > Waiting for target selection...
+                </div>
+            </div>
+
+            <!-- Prediction and Reason Section -->
+            <div class="analysis-card" id="analysisCard">
+                <div class="prediction-badge" id="predictionBadge">--</div>
+                
+                <div class="analysis-content">
+                    <h3 id="reasonTitle">Deep Analysis Reason</h3>
+                    <div class="analysis-text" id="reasonText">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Mock Database (NSE/BSE Stocks & IPOs) ---
+        const database = {
+            stocks: [
+                { symbol: "RELIANCE", name: "Reliance Industries", price: "₹2,954.20", trend: "up", sentiment: "bullish" },
+                { symbol: "TCS", name: "Tata Consultancy Services", price: "₹3,890.15", trend: "down", sentiment: "bearish" },
+                { symbol: "HDFCBANK", name: "HDFC Bank Ltd.", price: "₹1,532.40", trend: "up", sentiment: "bullish" },
+                { symbol: "INFY", name: "Infosys Ltd.", price: "₹1,420.75", trend: "down", sentiment: "bearish" },
+                { symbol: "TATAMOTORS", name: "Tata Motors", price: "₹980.50", trend: "up", sentiment: "bullish" },
+                { symbol: "ZOMATO", name: "Zomato Ltd.", price: "₹190.25", trend: "up", sentiment: "bullish" }
+            ],
+            ipos: [
+                { symbol: "SWIGGY-IPO", name: "Swiggy Ltd.", price: "Upcoming", trend: "up", sentiment: "bullish" },
+                { symbol: "BAJAJHSG-IPO", name: "Bajaj Housing Finance", price: "Upcoming", trend: "down", sentiment: "bearish" },
+                { symbol: "OLA-IPO", name: "Ola Electric", price: "Upcoming", trend: "up", sentiment: "bullish" }
+            ]
+        };
+
+        // --- Simulated Analysis Reasons Database (En/Hi) ---
+        const reasonsDb = {
+            bullish: {
+                en: "Strong positive sentiment detected across X.com and LinkedIn. Deep web institutional chat rooms indicate heavy accumulation. Recent positive news regarding quarterly guidance has driven positive social engagement up by 84%. Forward prediction signals strong growth momentum.",
+                hi: "X.com और LinkedIn पर मजबूत सकारात्मक भावना पाई गई है। डीप वेब संस्थागत चैट रूम भारी संचय का संकेत देते हैं। त्रैमासिक मार्गदर्शन के संबंध में हालिया सकारात्मक खबरों ने सामाजिक जुड़ाव को 84% तक बढ़ा दिया है। भविष्य की भविष्यवाणी मजबूत विकास गति का संकेत देती है।"
+            },
+            bearish: {
+                en: "Negative sentiment surging on financial forums and social media. Crawled data from X.com shows high retail panic due to regulatory concerns and global market sell-offs. Deep web sentiment algorithms flag high probability of continued downward pressure.",
+                hi: "वित्तीय मंचों और सोशल मीडिया पर नकारात्मक भावना बढ़ रही है। X.com से क्रॉल किए गए डेटा विनियामक चिंताओं और वैश्विक बाजार में बिकवाली के कारण भारी खुदरा घबराहट दिखाते हैं। डीप वेब भावना एल्गोरिदम निरंतर गिरावट के दबाव की उच्च संभावना को चिह्नित करते हैं।"
+            }
+        };
+
+        // --- Application State ---
+        let currentTab = 'stocks';
+        let currentLanguage = 'en';
+        let currentAsset = null;
+        let crawlerInterval = null;
+
+        // --- UI Initialization ---
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-stocks').classList.toggle('active', tab === 'stocks');
+            document.getElementById('tab-ipos').classList.toggle('active', tab === 'ipos');
+            renderList();
+        }
+
+        function renderList(filterQuery = "") {
+            const listContainer = document.getElementById('assetList');
+            listContainer.innerHTML = '';
+            
+            const data = database[currentTab];
+            const filteredData = data.filter(item => 
+                item.symbol.toLowerCase().includes(filterQuery.toLowerCase()) || 
+                item.name.toLowerCase().includes(filterQuery.toLowerCase())
+            );
+
+            filteredData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.onclick = () => selectAsset(item);
+                
+                const priceClass = item.trend === 'up' ? 'price-up' : 'price-down';
+                const trendIcon = item.trend === 'up' ? '▲' : '▼';
+                const priceDisplay = item.price === "Upcoming" ? item.price : `${item.price} <span class="${priceClass}">${trendIcon}</span>`;
+
+                div.innerHTML = `
+                    <div>
+                        <div class="item-symbol">${item.symbol}</div>
+                        <div class="item-name">${item.name}</div>
+                    </div>
+                    <div style="text-align: right;">${priceDisplay}</div>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function filterAssets() {
+            const query = document.getElementById('searchInput').value;
+            renderList(query);
+        }
+
+        // --- Core Application Logic ---
+        function selectAsset(item) {
+            currentAsset = item;
+            
+            // Update Header
+            document.getElementById('displayName').innerText = item.name;
+            document.getElementById('displaySymbol').innerText = item.symbol;
+            
+            const priceClass = item.trend === 'up' ? 'price-up' : 'price-down';
+            const trendIcon = item.trend === 'up' ? '▲' : '▼';
+            document.getElementById('displayPrice').innerHTML = item.price === "Upcoming" ? item.price : `${item.price} <span class="${priceClass}">${trendIcon}</span>`;
+
+            // Reset UI for crawling
+            document.getElementById('analysisCard').style.display = 'none';
+            const terminal = document.getElementById('terminalOutput');
+            terminal.innerHTML = `> Initializing deep crawl protocol for ${item.symbol}...<br>`;
+            document.getElementById('crawlerStatus').innerText = "CRAWLING LIVE...";
+            document.getElementById('crawlerStatus').style.color = "var(--accent-red)";
+
+            runCrawler(item);
+        }
+
+        function runCrawler(item) {
+            if (crawlerInterval) clearInterval(crawlerInterval);
+            const terminal = document.getElementById('terminalOutput');
+            
+            const crawlSteps = [
+                `> Establishing secure connection to X.com API...`,
+                `> Querying advanced search: "${item.name}" OR "$${item.symbol}"...`,
+                `> Parsing 4,521 recent tweets... Sentiment: Calculating...`,
+                `> Accessing LinkedIn public posts mentioning "${item.name}"...`,
+                `> Scraping deep web financial forums and insider chat boards...`,
+                `> Cross-referencing current market volume with social hype...`,
+                `> Running NLP (Natural Language Processing) on scraped datasets...`,
+                item.sentiment === 'bullish' ? `> Found keywords: "Growth", "Buy", "Breakout", "Strong"` : `> Found keywords: "Sell", "Crash", "Overvalued", "Risk"`,
+                `> Finalizing algorithmic prediction...`
+            ];
+
+            let step = 0;
+            crawlerInterval = setInterval(() => {
+                if (step < crawlSteps.length) {
+                    const time = new Date().toLocaleTimeString();
+                    terminal.innerHTML += `[${time}] ${crawlSteps[step]}<br>`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                    step++;
+                } else {
+                    clearInterval(crawlerInterval);
+                    document.getElementById('crawlerStatus').innerText = "CRAWL COMPLETE";
+                    document.getElementById('crawlerStatus').style.color = "var(--accent-green)";
+                    terminal.innerHTML += `> Analysis generated successfully.<br>`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                    showPrediction(item);
+                }
+            }, 600); // Simulated delay between terminal lines
+        }
+
+        function showPrediction(item) {
+            const card = document.getElementById('analysisCard');
+            const badge = document.getElementById('predictionBadge');
+            
+            card.style.display = 'block';
+            
+            if (item.sentiment === 'bullish') {
+                badge.className = 'prediction-badge bullish';
+                badge.innerText = 'PREDICTION: HIGH GROWTH EXPECTED 🚀';
+            } else {
+                badge.className = 'prediction-badge bearish';
+                badge.innerText = 'PREDICTION: DOWNTREND / FALL EXPECTED 📉';
+            }
+
+            updateLanguageUI();
+        }
+
+        // --- Translation Logic ---
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
+            document.getElementById('langHiBtn').classList.toggle('active', lang === 'hi');
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
+            // Update UI Labels
+            document.getElementById('reasonTitle').innerText = currentLanguage === 'en' ? "Deep Analysis Reason & Findings" : "गहन विश्लेषण कारण और निष्कर्ष";
+            
+            // Update Content if an asset is selected and crawled
+            if (currentAsset && document.getElementById('analysisCard').style.display === 'block') {
+                const sentimentText = reasonsDb[currentAsset.sentiment][currentLanguage];
+                document.getElementById('reasonText').innerText = sentimentText;
+            }
+        }
+
+        // Initialize App
+        renderList();
+    </script>
+</body>
+</html>
